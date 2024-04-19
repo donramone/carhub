@@ -1,7 +1,20 @@
-import {Hero, SearchBar, CustomFilter} from "@/components";
+import {Hero, SearchBar, CustomFilter, CarCard} from "@/components";
+import { fuels, yearsOfProduction } from "@/constants";
+import { fetchCars } from "@/utils";
 import Image from "next/image";
 
-export default function Home() {
+export default async function Home({searchParams}) {
+//  const allCars = await fetchCars();
+    const allCars = await fetchCars({
+      manufacturer: searchParams.manufacturer || '',
+      year: searchParams.year || 2022, 
+      fuel: searchParams.fuel ||  '', 
+      limit: searchParams.limit || 10,
+      model: searchParams.model || '',  
+    });
+  const isDataEmpty = !Array.isArray(allCars) || allCars.length < 0 || !allCars;
+  
+
   return (
     <main className="overflow-hidden">
       <Hero />
@@ -14,9 +27,24 @@ export default function Home() {
           <SearchBar />
         </div>
         <div className="home__filter-container">
-          <CustomFilter title="fuel" />
-          <CustomFilter title="year" />
+          <CustomFilter title="fuel" options={fuels} />
+          <CustomFilter title="year" options={yearsOfProduction} />
         </div>
+
+        {!isDataEmpty ? (
+          <section>
+            <div className="home__cars-wrapper">
+              { allCars?.map((car)=> <CarCard car={car} />
+              )}
+            </div>
+            We have cars</section>
+        ): (
+          <div className="home__error-container" >
+            <h2 className="text-black text-xl font-bold">No cars</h2>
+            <p> {allCars?.messages} </p>
+          </div>
+        )}
+
       </div>
     </main>
   );
